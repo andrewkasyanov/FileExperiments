@@ -11,20 +11,14 @@ import java.util.zip.ZipOutputStream;
 public class Main {
     public static void main(String[] args) {
         String path = "C:\\Users\\kasya\\Desktop\\11\\";
-        String[] in = {"22.txt", "11.txt", "output.txt"};
+        String in = path + "test";
         String out = path + "archive.zip";
 
         try {
             FileOutputStream outputStream = new FileOutputStream(out);
             ZipOutputStream zipOut = new ZipOutputStream(outputStream);
-            for (String fileName : in) {
-                File file = new File(path + fileName);
-                ZipEntry entry = new ZipEntry(file.getName());
-                zipOut.putNextEntry(entry);
-                Path filePath = Paths.get(file.getAbsolutePath());
-                byte[] data = Files.readAllBytes(filePath);
-                zipOut.write(data);
-            }
+            writeFileToZip(new File(in),zipOut,"");
+
             zipOut.flush();
             zipOut.close();
             outputStream.close();
@@ -33,5 +27,23 @@ public class Main {
         }
 
 
+    }
+    public static void writeFileToZip(File file, ZipOutputStream zipOut,
+                                      String path) throws Exception{
+        if(file.isDirectory()) {
+            String folder = path + file.getName() + "/";
+            ZipEntry entry = new ZipEntry(folder);
+            zipOut.putNextEntry(entry);
+            zipOut.closeEntry();
+            File[] files = file.listFiles();
+            for(File subFile : files) {
+                writeFileToZip(subFile, zipOut, path);
+            }
+            return;
+        }
+        ZipEntry entry = new ZipEntry(path + file.getName());
+        zipOut.putNextEntry(entry);
+        byte[] bytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+        zipOut.write(bytes);
     }
 }
